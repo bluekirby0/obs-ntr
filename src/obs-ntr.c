@@ -5,7 +5,19 @@
 
 #include <turbojpeg.h>
 
+#ifdef __WIN32__
 #include <WinSock2.h>
+#else
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#define SOCKET int
+#define INVALID_SOCKET -1
+int closesocket(int fd) {return close(fd);};
+#endif
 
 // Extracted from ns.h in the NTR source.
 enum ntr_command_type
@@ -441,7 +453,7 @@ void *obs_ntr_net_thread_run(void *data)
 
 			if (elapsed_ns_since_last_read >= DATA_SOCKET_TIMEOUT_DURATION_NS)
 			{
-				blog(LOG_WARNING, "obs-ntr: Data socket received no data after %d ms; probably not active", elapsed_ns_since_last_read / 1000000);
+				blog(LOG_WARNING, "obs-ntr: Data socket received no data after %ld ms; probably not active", elapsed_ns_since_last_read / 1000000);
 				break;
 			}
 		}
